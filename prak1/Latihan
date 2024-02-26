@@ -1,4 +1,4 @@
-class Lagu:
+class Lagu
     def __init__(self, penyanyi, judul, tahun):
         self.__penyanyi = penyanyi
         self.__judul = judul
@@ -17,7 +17,7 @@ class Lagu:
 class Playlist:
     def __init__(self, daftar_lagu):
         self.__daftar_lagu = daftar_lagu
-        self.__lagu_yang_dimainkan_saat_ini = None
+        self.__lagu_yang_dimainkan_saat_ini = 
 
     def putar_lagu_pertama(self):
         self.__lagu_yang_dimainkan_saat_ini = 0
