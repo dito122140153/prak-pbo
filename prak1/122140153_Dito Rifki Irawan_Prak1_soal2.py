@@ -8,8 +8,8 @@ def luaskelilinglingkaran (r):
     luas = math.pi * r**2
     keliling = 2 * math.pi * r
     
-    print("Luas : ", luas)
-    print("Keliling : ", keliling)
+    print("Luas : ", round(luas, 2))
+    print("Keliling : ", round(keliling, 2))
     
 r =  float(input("jari-jari : "))
 
