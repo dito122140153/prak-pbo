@@ -31,27 +31,27 @@ class Mahasiswa:
         return "Aktif" if self.__isMahasiswa else "Tidak Aktif"
 
 
-mahasiswa1 = Mahasiswa("122140146", "Fadhil Zurani", 2023)
+mahasiswa1 = Mahasiswa("122140131", "Muhammad Salman Azizi", 2022)
 print("Informasi Mahasiswa 1 sebelum perubahan:")
 print(mahasiswa1.display_info())
 print("Status Mahasiswa 1:", mahasiswa1.get_status_mahasiswa())
 print("Apakah mahasiswa 1 lulus? ", mahasiswa1.is_lulus())
 
-mahasiswa1.set_nama("Fadhil Hasanudin")
-mahasiswa1.set_nim("122140144")
+mahasiswa1.set_nama("Ayam Turbo")
+mahasiswa1.set_nim("120140001")
 
 print("\nInformasi Mahasiswa 1 setelah perubahan:")
 print(mahasiswa1.display_info())
 
 
-mahasiswa2 = Mahasiswa("122140123", "Dito Rifki", 2020, isMahasiswa=False)
+mahasiswa2 = Mahasiswa("123140121", "Hamka Putra Andiyan", 2022, isMahasiswa=False)
 print("\nInformasi Mahasiswa 2 sebelum perubahan:")
 print(mahasiswa2.display_info())
 print("Status Mahasiswa 2:", mahasiswa2.get_status_mahasiswa())
 print("Apakah mahasiswa 2 lulus? ", mahasiswa2.is_lulus())
 
-mahasiswa2.set_nama("Dito Halimawan")
-mahasiswa2.set_nim("122140122")
+mahasiswa2.set_nama("Dito Rifki Irawan")
+mahasiswa2.set_nim("122140153")
 
 print("\nInformasi Mahasiswa 2 setelah perubahan:")
 print(mahasiswa2.display_info())
