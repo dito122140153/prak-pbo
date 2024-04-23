@@ -1,0 +1,249 @@
+import pygame
+import random
+import sys
+
+# Inisialisasi Pygame
+pygame.init()
+
+# Ukuran layar
+SCREEN_WIDTH = 400
+SCREEN_HEIGHT = 600
+
+# Warna
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+
+# Membuat layar
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+pygame.display.set_caption("Flappy Bird")
+
+# Memuat gambar latar belakang
+background_img = pygame.image.load("background.jpg")
+
+# Memuat suara
+sfx_wing = pygame.mixer.Sound("sfx_wing.wav")
+sfx_point = pygame.mixer.Sound("sfx_point.wav")
+sfx_hit = pygame.mixer.Sound("sfx_hit.wav")
+
+# Clock untuk mengatur frame rate
+clock = pygame.time.Clock()
+
+# Abstract class untuk game objects
+class GameObject:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def show(self):
+        pass
+
+    def update(self):
+        pass
+
+    def offscreen(self):
+        pass
+
+# Kelas Bird yang mewarisi GameObject
+class Bird(GameObject):
+    def __init__(self):
+        super().__init__(50, SCREEN_HEIGHT // 2)
+        self.gravity = 0.9 
+        self.lift = -20
+        self.velocity = 0
+        self.radius = 20
+        self.bird_img = pygame.image.load("bird.png")
+        self.bird_rect = self.bird_img.get_rect(center=(self.x, self.y))
+
+    def show(self):
+        screen.blit(self.bird_img, self.bird_rect)
+
+    def update(self):
+        self.velocity += self.gravity
+        self.velocity *= 0.9
+        self.y += self.velocity
+        self.bird_rect.centery = self.y
+        if self.y > SCREEN_HEIGHT - self.radius:
+            self.y = SCREEN_HEIGHT - self.radius
+            self.velocity = 0
+        elif self.y < self.radius:
+            self.y = self.radius
+            self.velocity = 0
+
+    def up(self):
+        self.velocity += self.lift
+        sfx_wing.play()  # Memutar efek suara sayap saat burung terbang ke atas
+
+    def offscreen(self):
+        return False  # Burung tidak pernah offscreen dalam game Flappy Bird
+
+# Kelas Pipe yang mewarisi GameObject
+class Pipe(GameObject):
+    def __init__(self):
+        super().__init__(SCREEN_WIDTH, random.randint(50, SCREEN_HEIGHT - 200))
+        self.gap = 200 
+        self.bottom = SCREEN_HEIGHT - self.y - self.gap
+        self.w = 50
+        self.speed = 3
+
+    def show(self):
+        pygame.draw.rect(screen, GREEN, (self.x, 0, self.w, self.y))
+        pygame.draw.rect(screen, GREEN, (self.x, self.y + self.gap, self.w, self.bottom))
+
+    def update(self):
+        self.x -= self.speed
+
+    def offscreen(self):
+        return self.x < -self.w
+
+# Fungsi untuk menampilkan layar awal
+def show_start_screen():
+    highscore = get_highscore()  # Mengambil highscore dari file
+    screen.blit(background_img, (0, 0))
+
+
+    font = pygame.font.Font(None, 36)
+    instruction_text = font.render("Press SPACE to Start", True, BLACK)
+    screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, SCREEN_HEIGHT // 1.3))
+
+    instruction_text = font.render("Press ESC to Exit", True, BLACK)
+    screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, SCREEN_HEIGHT // 1.2))
+
+    highscore_text = font.render("Highscore: " + str(highscore), True, BLACK)
+    screen.blit(highscore_text, (SCREEN_WIDTH // 2 - highscore_text.get_width() // 2, SCREEN_HEIGHT // 1.1))  # Menampilkan highscore
+
+# Fungsi untuk menampilkan layar game over
+def show_game_over_screen(score, highscore):
+    screen.blit(background_img, (0, 0))
+
+    game_over = pygame.image.load("game_over.png")
+# Menampilkan gambar game over di tengah layar
+    screen.blit(game_over, (SCREEN_WIDTH // 2 - game_over.get_width() // 2, SCREEN_HEIGHT // 2 - game_over.get_height() // 2))
+
+    font = pygame.font.Font(None, 48)
+    game_over_text = font.render("Game Over", True, WHITE)
+    screen.blit(game_over_text, (SCREEN_WIDTH // 2 - game_over_text.get_width() // 2, SCREEN_HEIGHT // 4))
+
+    score_text = font.render("Score: " + str(score), True, WHITE)
+    screen.blit(score_text, (SCREEN_WIDTH // 4.5 - score_text.get_width() // 2, SCREEN_HEIGHT // 1.6))
+
+    highscore_text = font.render("Highscore: " + str(highscore), True, WHITE)
+    screen.blit(highscore_text, (SCREEN_WIDTH // 3 - highscore_text.get_width() // 2, SCREEN_HEIGHT // 1.4))
+
+    font = pygame.font.Font(None, 24)
+    instruction_text = font.render("Press SPACE to Play Again", True, WHITE)
+    screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, SCREEN_HEIGHT // 1.15))
+
+    instruction_text = font.render("Press ESC to Exit", True, WHITE)
+    screen.blit(instruction_text, (SCREEN_WIDTH // 2 - instruction_text.get_width() // 2, SCREEN_HEIGHT // 1.1))
+
+    pygame.display.update()
+
+# Fungsi untuk mengatur ulang nilai-nilai permainan
+def reset_game():
+    return Bird(), []
+
+# Fungsi untuk mendapatkan highscore dari file
+def get_highscore():
+    try:
+        with open("highscore.txt", "r") as file:
+            highscore = int(file.read())
+    except FileNotFoundError:
+        highscore = 0
+    return highscore
+
+# Fungsi untuk menyimpan highscore ke file
+def save_highscore(score):
+    with open("highscore.txt", "w") as file:
+        file.write(str(score))
+
+# Main loop
+def main():
+    highscore = get_highscore()  # Mengambil highscore dari file
+    show_start_screen()  # Menampilkan layar awal dengan highscore
+    pygame.display.update()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()  # Keluar dari permainan jika tombol exit di klik
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird, pipes = reset_game()  # Memulai permainan baru
+                    run_game(bird, pipes, highscore)  # Menjalankan permainan baru
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()  # Keluar dari permainan jika tombol esc di klik
+
+# Fungsi untuk menjalankan permainan
+def run_game(bird, pipes, highscore):
+    score = 0
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()  # Keluar dari permainan jika tombol exit di klik
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird.up()
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()  # Keluar dari permainan jika tombol esc di klik
+
+        screen.blit(background_img, (0, 0))  # Menampilkan background setiap frame
+        
+        if len(pipes) == 0 or pipes[-1].x < SCREEN_WIDTH - 200:
+            pipes.append(Pipe())
+
+        for pipe in pipes:
+            pipe.show()
+            pipe.update()
+
+        if pipes and pipes[0].offscreen():
+            pipes.pop(0)
+            score += 1
+            sfx_point.play()  # Memutar efek suara saat mendapatkan poin
+            if score > highscore:
+                highscore = score  # Update highscore jika skor saat ini lebih tinggi
+
+        bird.show()
+        bird.update()
+
+        for pipe in pipes:
+            if bird.x + bird.radius > pipe.x and bird.x - bird.radius < pipe.x + pipe.w:
+                if bird.y - bird.radius < pipe.y or bird.y + bird.radius > pipe.y + pipe.gap:
+                    running = False
+                    sfx_hit.play()  # Memutar efek suara saat burung menabrak pipa
+                    break  # Keluar dari loop jika terjadi tabrakan
+
+        font = pygame.font.Font(None, 36)
+        text = font.render("Score: " + str(score), True, BLACK)
+        screen.blit(text, (10, 10))
+
+        pygame.display.update()
+        clock.tick(60)
+
+    # Menyimpan highscore ke file
+    save_highscore(highscore)
+
+    # Menampilkan layar game over
+    show_game_over_screen(score, highscore)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()  # Keluar dari permainan jika tombol exit di klik
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird, pipes = reset_game()  # Memulai permainan baru
+                    run_game(bird, pipes, highscore)  # Menjalankan permainan baru
+                elif event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()  # Keluar dari permainan jika tombol esc di klik
+
+if __name__ == "__main__":
+    main()
+
